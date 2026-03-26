@@ -378,3 +378,65 @@ Top candidates:
 # ⭐ Author
 
 Huneshwar Yadav
+
+# 🚀 State Management: Context API & Architectural Patterns
+
+---
+
+## 🔹 1. The State Management Hierarchy
+**Mental Model:** Not all state is created equal. A Senior Engineer chooses the "lowest" possible level for state to minimize the **Render Blast Radius**.
+
+1. **Local State (`useState`):** The default. Use for UI toggles, form inputs, and component-specific logic.
+2. **Lifted State:** Shared between 2-3 immediate siblings. Move to the closest common parent.
+3. **Global State (Context/Redux):** Used for data that "transcends" the component tree (Auth, Theme, Language).
+
+---
+
+## 🔹 2. The Context API (Dependency Injection)
+Context is not a state management library like Redux; it is a **transport mechanism**. It allows you to "teleport" data to deep children without **Prop Drilling**.
+
+### The Core Flow:
+1. **`createContext()`**: Defines the "shape" of the data.
+2. **`Provider`**: Wraps a sub-tree and holds the `value`.
+3. **`useContext()`**: The hook used by any child to "plug into" the data.
+
+
+
+---
+
+## 🔹 3. Performance & The "Re-render Trap"
+The most common FAANG interview question: **"Does Context re-render everything?"**
+* **The Answer:** Yes. When the `value` in a Provider changes, **every** component calling `useContext` for that specific context re-renders. 
+* **The Solution:** * **Memoization:** Wrap the provider's value in `useMemo` so the reference only changes when the actual data changes.
+    * **Context Splitting:** Don't put your Theme, User, and Cart in one "Mega-Context." Split them so a Theme change doesn't trigger a Cart re-render.
+
+
+
+---
+
+## 🔹 4. State Colocation
+**Rule:** "Keep state as local as possible, and only as global as necessary."
+* **Why?** It makes components easier to move, easier to test, and significantly faster because it limits how many components React has to "diff" during a change.
+
+---
+
+## 🔹 5. Context vs. Redux (The Trade-offs)
+| Feature | Context API | Redux / Zustand |
+| :--- | :--- | :--- |
+| **Setup** | Built-in, Zero boilerplate | Requires library + setup |
+| **Updates** | All-or-nothing (no selectors) | High precision (selectors) |
+| **Debugging** | Basic | Advanced (DevTools/Time Travel) |
+| **Use Case** | Low-frequency updates | High-frequency / Complex logic |
+
+---
+
+## 🎯 FAANG Interview "Architect" Questions
+* **Q: How do you prevent "unnecessary" renders in a Context Consumer?**
+    * *A: Split the Context, use `React.memo` on the consumer's children, or pass the child tree as `props.children` to the Provider.*
+* **Q: Why is passing a new object `value={{user}}` inside a render function a performance anti-pattern?**
+    * *A: Because `{{user}}` creates a new object reference on every render. Even if `user` data is the same, the reference change triggers all consumers to re-render.*
+* **Q: When would you reach for Redux over Context?**
+    * *A: When the state transitions are complex (many reducers) or when performance is critical for high-frequency updates (like a collaborative drawing app).*
+
+---
+**Author:** Huneshwar Yadav | **Domain:** State Management & Performance
