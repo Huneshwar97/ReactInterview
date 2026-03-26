@@ -417,3 +417,67 @@ Top candidates:
 # ⭐ Author
 
 Huneshwar Yadav
+
+
+
+# 🚀 React Hooks: State, Lifecycle & Performance Optimization
+
+---
+
+## 🔹 1. The Hook Philosophy
+**Mental Model:** Hooks allow you to "hook into" React's internal state and lifecycle from functional components. They rely on a **Linked List** structure internally; therefore, they must always be called in the same order (never inside loops or conditions).
+
+
+
+---
+
+## 🔹 2. State & Reference Management
+* **`useState`:** The foundation of dynamic UI. Updates are asynchronous and batched. Always use the functional update `setCount(prev => prev + 1)` to avoid stale closures.
+* **`useRef`:** A "stealth" hook. It persists values between renders but **does not trigger a re-render** when the value changes. Perfect for DOM access or storing previous state values.
+
+---
+
+## 🔹 3. The Side Effect Sandbox (`useEffect`)
+`useEffect` handles the "outside world" (API calls, subscriptions).
+* **Timing:** It runs **after** the render is committed to the screen (asynchronous).
+* **Cleanup:** Always return a cleanup function to prevent memory leaks (e.g., `clearInterval` or `socket.disconnect`).
+* **`useLayoutEffect`:** The synchronous version. It runs **before** the browser paints. Use it only for measuring DOM elements to prevent UI flickering.
+
+
+
+---
+
+## 🔹 4. Performance: Memoization
+Memoization is the process of caching results to avoid expensive re-calculations.
+
+1. **`useMemo`:** Caches a **calculated value**. Use for heavy data filtering or transformation.
+2. **`useCallback`:** Caches a **function definition**. Use when passing functions to children wrapped in `React.memo` to maintain referential identity.
+
+> [!WARNING]
+> **Over-optimization Trap:** Do not wrap every variable in a hook. Memoization has its own memory and comparison cost. Only use it for expensive logic or to prevent broken re-render chains.
+
+---
+
+## 🔹 5. Summary: Hook Decision Matrix
+
+| Requirement | Use This Hook | Triggers Render? |
+| :--- | :--- | :--- |
+| **Store UI Data** | `useState` | Yes |
+| **Complex State Logic** | `useReducer` | Yes |
+| **Sync with API/DOM** | `useEffect` | Yes (via state update) |
+| **Measure DOM (Pre-paint)** | `useLayoutEffect` | Yes |
+| **Store Value (No Render)** | `useRef` | No |
+| **Cache Expensive Math** | `useMemo` | No |
+
+---
+
+## 🎯 FAANG Interview "Hooks" Questions
+* **Q: Why can't Hooks be used in loops?**
+    * *A: React tracks hooks by their index in a linked list. If a loop changes the number of hooks called, the index will mismatch with the stored state, causing a crash.*
+* **Q: What is a "Stale Closure" in `useEffect`?**
+    * *A: When an effect captures a variable from an old render cycle and doesn't update because that variable wasn't included in the dependency array.*
+* **Q: How do you implement `componentDidMount` using hooks?**
+    * *A: Use `useEffect(() => { ... }, [])`. The empty dependency array ensures the code runs only once after the initial mount.*
+
+---
+**Author:** Huneshwar Yadav | **Specialization:** React Hooks & Performance
