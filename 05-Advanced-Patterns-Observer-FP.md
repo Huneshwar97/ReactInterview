@@ -422,3 +422,67 @@ Top candidates:
 # ⭐ Author
 
 Huneshwar Yadav
+
+# 🚀 Advanced Patterns: Observer, Streams & Functional Programming
+
+---
+
+## 🔹 1. The Observer Pattern in React
+**Mental Model:** A "Subject" holds data and notifies "Observers" when that data changes. 
+
+* **The React Twist:** In a true Observer pattern, the Subject pushes data to the Observer. In React, `setState` notifies React that a component is "dirty," and React **schedules** a re-render to "pull" the new UI.
+* **Firebase/Socket Integration:** This is the "Pure" Observer pattern. You subscribe to a data stream, and the `onSnapshot` or `onMessage` callback acts as the Observer that updates React's state.
+
+
+
+---
+
+## 🔹 2. Understanding Streams (Data over Time)
+A **Stream** is a sequence of events arriving asynchronously. 
+
+* **The "Array" Analogy:** An array is data in space (all here now). A stream is data in time (arriving one by one).
+* **Observer Methods:**
+    * `next(value)`: The stream sends a new "chunk" of data.
+    * `error(err)`: The stream encountered a problem.
+    * `complete()`: The stream has finished and will send no more data.
+
+---
+
+## 🔹 3. Functional Programming (FP) Principles
+React is built on FP foundations. To master React, you must master these three pillars:
+
+1. **Pure Functions:** Given the same props, a component must always return the same JSX. It should have no side effects during the render phase.
+2. **Immutability:** Never modify state directly (`arr.push()`). Always create a new copy (`[...arr, 1]`). This allows React to use **Referential Equality** (`===`) for instant change detection.
+3. **Declarative Code:** You describe *what* the UI should look like for a given state, rather than *how* to transition the DOM elements.
+
+
+
+---
+
+## 🔹 4. Side Effects & The Sandbox
+In a "Pure" functional world, side effects (API calls, DOM manual updates) are "impurities." React uses the **`useEffect` Hook** as a sandbox to contain these impurities.
+
+* **The Logic:** Keep the component body "Pure" for fast, predictable rendering. Push the "Impure" logic (the Side Effects) to the end of the cycle where they won't block the UI.
+
+---
+
+## 🔹 5. Summary: Reactive vs. Functional
+
+| Concept | Functional Programming | Reactive Programming |
+| :--- | :--- | :--- |
+| **Primary Goal** | Predictability & Testability | Responsiveness & Event-handling |
+| **Data Handling** | Transformations (`map`, `filter`) | Observations (`subscribe`, `next`) |
+| **React Tool** | `useMemo`, `useReducer`, `memo` | `useState`, `useEffect`, `Context` |
+
+---
+
+## 🎯 FAANG Interview "Architect" Questions
+* **Q: Difference between Observer and Pub-Sub?**
+    * *A: In Observer, the Subject knows its observers. In Pub-Sub, they are decoupled by a "Message Broker" or "Event Bus."*
+* **Q: Why is "Referential Transparency" important in React?**
+    * *A: It allows React to use Memoization. If a function is pure, React can skip executing it and return a cached result if the inputs haven't changed.*
+* **Q: How does React handle "Backpressure" in streams?**
+    * *A: React uses "Concurrent Rendering" and "Transitions" (`useTransition`) to ensure that a heavy stream of state updates doesn't freeze the main thread.*
+
+---
+**Author:** Huneshwar Yadav | **Specialization:** Advanced Patterns & FP
