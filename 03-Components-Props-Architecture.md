@@ -464,3 +464,75 @@ Top candidates:
 # ⭐ Author
 
 Huneshwar Yadav
+
+# 🚀 React Architecture: Components, Props & Design Patterns
+
+---
+
+## 🔹 1. The Component Philosophy
+**Mental Model:** $UI = f(data)$
+Components are independent, reusable pieces of UI. In a scalable architecture, they should follow the **Single Responsibility Principle**: one component should do one thing well.
+
+* **Functional Components:** The modern standard. They are simpler, easier to test, and support Hooks.
+* **Component Identity:** React identifies components by their position in the tree and their `key`. 
+
+---
+
+## 🔹 2. Props & Data Flow
+Props are the "API" of your component. They allow data to flow **down** the tree (One-Way Data Flow).
+
+* **Immutability:** Props are read-only. This makes the data flow predictable and easier to debug.
+* **Children Prop:** Used for **Composition**. It allows you to pass JSX elements as data, making components flexible "shells."
+* **The "Slot" Pattern:** Passing components as named props (e.g., `header={<Header />}`) to avoid deep nesting and prop drilling.
+
+
+
+---
+
+## 🔹 3. State Placement & Management
+Where you put your state determines how much of your app re-renders.
+
+1.  **Lifting State Up:** Moving state to the *closest common ancestor* so siblings can share data.
+2.  **Colocation:** The opposite of lifting—keeping state as local as possible. If only one sub-tree needs data, don't put it in a global Context. This limits the "render blast radius."
+3.  **Prop Drilling:** Passing props through components that don't need them. 
+    * *Solution:* **Context API** for global data (Theme, User) or **Composition** for UI structure.
+
+---
+
+## 🔹 4. Smart vs. Dumb Components
+A classic architectural split for maintainability:
+
+* **Smart (Container):** Concerned with *how things work*. They fetch data, manage state, and deal with side effects.
+* **Dumb (Presentational):** Concerned with *how things look*. They receive data via props and have no dependencies on the rest of the app.
+
+---
+
+## 🔹 5. Controlled vs. Uncontrolled Components
+| Feature | Controlled | Uncontrolled |
+| :--- | :--- | :--- |
+| **Source of Truth** | React State | The DOM (Refs) |
+| **Best For** | Validation, Dynamic inputs | File uploads, Simple forms |
+| **Performance** | Re-renders on every change | No re-renders during typing |
+
+---
+
+## 🔹 6. Advanced Pattern: Inversion of Control (IoC)
+Instead of a component having 20 props to handle every edge case, use **Composition**.
+* **Bad:** `<List showIcon={true} iconSize={20} textColor="red" />`
+* **Good:** `<List><ListItem icon={<UserIcon />} color="red">Content</ListItem></List>`
+* **Why?** It gives the consumer of the component control over the UI without bloating the component logic.
+
+
+
+---
+
+## 🎯 FAANG Architectural Interview Questions
+* **Q: How do you prevent a Context update from re-rendering the whole app?**
+    * *A: Split contexts into smaller ones, wrap children in `React.memo`, or use the "Children as Props" pattern so the child tree isn't re-created.*
+* **Q: When is "Prop Drilling" actually okay?**
+    * *A: When the data flow is explicit and the components are closely related. Overusing Context makes components harder to reuse in isolation.*
+* **Q: Why avoid defining components inside components?**
+    * *A: Because React will see it as a new function reference every render, unmounting and remounting the entire sub-tree, which destroys performance and state.*
+
+---
+**Author:** Huneshwar Yadav | **Focus:** Scalable UI Architecture
