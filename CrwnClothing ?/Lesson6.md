@@ -448,7 +448,205 @@ With `<img src={logo}>`, the SVG is an opaque image — you can't style its inte
 
 ---
 
-## 📊 Quiz Results
+## 🔬 firebase.utils.js — Line by Line Deep Dive
+
+### Line 1: Import `initializeApp`
+
+```js
+import { initializeApp } from 'firebase/app';
+```
+
+- Imports the `initializeApp` function from Firebase's **core package**
+- `firebase/app` is the foundation — every Firebase service builds on top of it
+- `initializeApp` takes your config object and creates a **connection** to your Firebase project in the cloud
+- Without this, nothing else in Firebase works — must run before `getAuth()`, `getFirestore()`, etc.
+- Calling `initializeApp` twice with the same config throws an error — runs **once at module load time**
+
+---
+
+### Lines 2-7: Import Auth Functions
+
+```js
+import {
+  getAuth,
+  signInWithRedirect,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from 'firebase/auth';
+```
+
+| Import | Purpose |
+|--------|---------|
+| `getAuth` | Gets the Firebase Auth instance — the object that manages all auth state |
+| `signInWithRedirect` | Sign in by **redirecting** the whole page to Google, then back |
+| `signInWithPopup` | Sign in via a **popup window** — page stays open |
+| `GoogleAuthProvider` | Tells Firebase *which* identity provider to use — Google in this case |
+
+> ⚠️ `signInWithRedirect` is imported but **never used** in this lesson — it's there for reference. On mobile, popups are often blocked by browsers, so redirect is preferred for mobile apps.
+
+---
+
+### Lines 9-16: Firebase Config Object
+
+```js
+const firebaseConfig = {
+  apiKey: 'AIzaSyDDU4V-_QV3M8GyhC9SVieRTDM4dbiT0Yk',
+  authDomain: 'crwn-clothing-db-98d4d.firebaseapp.com',
+  projectId: 'crwn-clothing-db-98d4d',
+  storageBucket: 'crwn-clothing-db-98d4d.appspot.com',
+  messagingSenderId: '626766232035',
+  appId: '1:626766232035:web:506621582dab103a4d08d6',
+};
+```
+
+| Key | Meaning |
+|-----|---------|
+| `apiKey` | Identifies your app to Google's APIs — **not a secret** |
+| `authDomain` | Domain Firebase uses for OAuth redirects |
+| `projectId` | Your unique Firebase project name |
+| `storageBucket` | Where Firebase Storage files live |
+| `messagingSenderId` | Used for Firebase Cloud Messaging (push notifications) |
+| `appId` | Unique ID for this specific web app within the project |
+
+> 🔐 **Safe to commit to GitHub.** Firebase security comes from **Firestore Security Rules**, not from hiding this config. Think of it like a public address — knowing the address doesn't give access to what's inside.
+
+---
+
+### Line 18: Initialize the App
+
+```js
+const firebaseApp = initializeApp(firebaseConfig);
+```
+
+- Connects your React app to the Firebase project in the cloud
+- Returns a `FirebaseApp` instance — the root object representing your connection
+- Must happen **before** calling `getAuth()`, `getFirestore()`, or any other Firebase service
+- Should only run **once** — at module load time when the file is first imported
+
+---
+
+### Line 20: Create the Google Auth Provider
+
+```js
+const provider = new GoogleAuthProvider();
+```
+
+- Creates an instance of Google's identity provider
+- Tells Firebase Auth: *"Use Google as the sign-in method"*
+- Firebase supports many providers — swap this line to change identity provider:
+
+```js
+// Other providers — same pattern
+new FacebookAuthProvider();
+new GithubAuthProvider();
+new TwitterAuthProvider();
+```
+
+---
+
+### Lines 22-24: Custom Parameters
+
+```js
+provider.setCustomParameters({
+  prompt: 'select_account',
+});
+```
+
+- Passes extra options to Google's OAuth consent screen
+- `prompt: 'select_account'` forces Google to **always show the account chooser** — even if the user is already signed in
+
+| `prompt` value | Behaviour |
+|----------------|-----------|
+| `'select_account'` | Always show account picker |
+| `'consent'` | Always show permission consent screen |
+| `'none'` | Never show UI — fails if not already signed in |
+
+> Without this, Google might silently sign in with the last used account — bad for users with multiple Google accounts (personal vs work).
+
+---
+
+### Line 26-28: createUserProfileDocument (Stub)
+
+```js
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+```
+- `export` — makes it importable in SignIn component
+- `async` — will eventually do async Firestore database writes
+- `userAuth` — the Firebase `UserCredential` object returned after sign-in
+- `additionalData` — extra fields to save beyond what Firebase Auth stores
+
+```js
+  if (!userAuth) return;
+```
+- **Guard clause** — if `userAuth` is null/undefined, exit immediately
+- Prevents errors if called before authentication completes
+- Pattern: **fail fast, fail early**
+
+```js
+  console.log(userAuth);
+```
+- Currently just logs the `UserCredential` to the browser console
+- **This is a stub** — in later lessons becomes:
+
+```js
+  // Future Firestore write:
+  const userRef = doc(db, 'users', userAuth.uid);
+  await setDoc(userRef, { email, displayName, createdAt, ...additionalData });
+```
+
+---
+
+### Lines 30-31: Export Auth & Sign-In Function
+
+```js
+export const auth = getAuth();
+```
+- `getAuth()` returns the **Auth instance** for this Firebase app
+- Tracks sign-in state across the app
+- Exported so other files can call `onAuthStateChanged(auth, callback)` in later lessons
+- There's only ever **one** Auth instance per Firebase app — `getAuth()` always returns the same one
+
+```js
+export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
+```
+- A **wrapper function** — hides Firebase implementation details from components
+- `signInWithPopup(auth, provider)` does the actual work:
+  - `auth` — the Auth instance (knows the Firebase project)
+  - `provider` — the GoogleAuthProvider (knows to open Google's OAuth)
+- Returns a **Promise** → resolves with `UserCredential` when user completes sign-in
+- The SignIn component **never needs to import** `auth` or `provider` directly — clean separation
+
+> 🔥 **This is the Facade Pattern** — complex Firebase setup hidden behind simple exported functions. If you ever switch from Firebase to AWS Cognito, you only change this one file, not every component. This file is a **service layer**.
+
+---
+
+### Complete Flow — Code Connected to Execution
+
+```
+firebase.utils.js loads (once, at import time)
+  → initializeApp(firebaseConfig)     line 18 — connects to Firebase cloud
+  → new GoogleAuthProvider()          line 20 — creates Google provider
+  → provider.setCustomParameters()    line 22 — always show account chooser
+  → getAuth()                         line 30 — gets auth instance
+
+User clicks "Sign in with Google"
+  → logGoogleUser() in SignIn         async function
+  → signInWithGooglePopup()           line 31 — our wrapper
+  → signInWithPopup(auth, provider)   Firebase function
+  → Google OAuth popup opens
+  → User selects account
+  → Google → Firebase: OAuth token
+  → Firebase validates with Google
+  → Returns UserCredential {
+      user: { uid, email, displayName, photoURL, accessToken }
+    }
+  → createUserProfileDocument()       line 26 — stub, console.logs for now
+                                       Later: writes to Firestore
+```
+
+---
+
+
 
 | # | Question | Score | Gap to Fix |
 |---|----------|-------|------------|
