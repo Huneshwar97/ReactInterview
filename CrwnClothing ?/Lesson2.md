@@ -261,3 +261,39 @@ Change the value in one place → updates everywhere. No hunting through files.
 ---
 
 *Notes by Huneshwar Yadav*
+
+Q1 ✅ — Missing key prop
+Your answer is correct. Here's how to say it in an interview:
+
+"React uses a virtual DOM and a diffing algorithm called Reconciliation. When rendering lists, React needs key to uniquely identify which items changed, were added, or removed. Without it, React falls back to re-rendering the entire list on every state change — this is O(n) work that could have been O(1). It also throws a console warning."
+
+🔥 Bonus point to mention: The key is never passed as a prop to the component itself — if you need the id inside the child, you must pass it separately as a different prop.
+
+Q2 ✅ — Index as key is bad practice
+Your answer is correct. The deeper explanation:
+
+"If I have a list [A, B, C] with index keys 0,1,2 and I delete item A, the list becomes [B, C] with keys 0,1. React now thinks item 0 is still the same element — it was just updated from A to B. This causes stale state bugs in inputs, animations, and controlled components. A stable, unique ID like a database id or uuid should always be used."
+
+🔥 Real bug example to mention: An input field inside a list item will retain the old typed value after deletion if index keys are used — a classic bug that's very hard to debug.
+
+Q3 ✅ — ReactDOM.render()
+Your answer is correct. Interview-level explanation:
+
+"ReactDOM.render() is the bridge between React's virtual DOM and the browser's real DOM. It takes your component tree and injects it into a single DOM node — typically <div id='root'> in index.html. This is what makes React a Single Page Application — there's no page reload, React controls everything inside that one div. In React 18, this was replaced by createRoot() for concurrent mode support."
+
+🔥 Bonus: Mentioning the React 18 upgrade from ReactDOM.render() → createRoot() shows you follow React's evolution.
+
+Q4 ✅ — className instead of class
+Your answer is correct. Say it this way:
+
+"JSX is not HTML — it compiles down to React.createElement() calls in plain JavaScript. Since class is a reserved keyword in JS (used for ES6 classes), using it as an attribute name would cause a syntax conflict. So React uses className which maps to the DOM property element.className. Same reason for becomes htmlFor in labels."
+
+🔥 Bonus: Mentioning htmlFor as another example of the same pattern shows deeper knowledge.
+
+Q5 ✅ — Object Destructuring
+Your answer is correct. Here's the senior-level explanation:
+
+"This is parameter destructuring — instead of writing (category) => category.title, we destructure directly in the function signature: ({ title }). It makes code cleaner and signals intent — you're explicitly declaring which properties you care about. In large codebases this is preferred because it makes the shape of the data self-documenting."
+
+🔥 Bonus follow-up they might ask: "What if you need both id and title?"
+Answer: ({ id, title }) => <div key={id}>{title}</div> — which is exactly the bug fix for this lesson's missing key!
